@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -5,59 +6,115 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Black Gold Tunisia</title>
 <style>
-body{background:#111;color:#f5d477;font-family:Arial;text-align:center;padding:20px}
-main{max-width:500px;margin:auto;background:#222;padding:20px;border:1px solid #c9a23c;border-radius:15px}
-input,button{padding:12px;margin:7px;border-radius:7px}
-input{width:85%}button{background:#c9a23c;border:0;font-weight:bold;cursor:pointer}
-h1{color:#e9bd4d}.hidden{display:none}
+body{margin:0;background:#111;color:#f5d477;font-family:Arial;text-align:center;padding:20px}
+main{max-width:500px;margin:auto;background:#222;padding:22px;border:2px solid #b58b35;border-radius:16px}
+h1{color:#f5d477}
+input,select,button{padding:13px;margin:8px;border-radius:8px;border:0;font-size:17px}
+button{background:#c69b38;color:#111;font-weight:bold;cursor:pointer}
+#reels{font-size:48px;background:#111;padding:20px;border-radius:12px;margin:20px 0}
+#message{min-height:30px;color:white}
+.small{color:#bbb;font-size:13px}
 </style>
 </head>
 <body>
-<h1>BLACK GOLD TUNISIA</h1>
-<p>منصة ترفيه عائلية بنقاط افتراضية</p>
 <main>
+<h1>BLACK GOLD TUNISIA</h1>
+<p>🎰 كازينو ترفيهي تجريبي</p>
+
 <div id="login">
-<h2>الدخول أو التسجيل</h2>
-<input id="name" placeholder="اسم المستخدم">
-<input id="pass" type="password" placeholder="كلمة المرور">
-<br><button onclick="enter(true)">حساب جديد</button>
-<button onclick="enter(false)">دخول</button>
-<p id="msg"></p>
+<p>اكتب اسمك للدخول</p>
+<input id="username" placeholder="اسم اللاعب">
+<button onclick="login()">دخول</button>
 </div>
-<div id="game" class="hidden">
-<h2>مرحبا <span id="who"></span></h2>
-<h3>رصيدك: <span id="points">100</span> نقطة</h3>
-<button onclick="play()">🎡 جرّب حظك</button>
-<p id="result"></p>
+
+<div id="game" style="display:none">
+<h3>مرحبا <span id="player"></span></h3>
+<h2>رصيدك: <span id="balance">1000</span> د.ت افتراضية</h2>
+
+<p>اختار لعبة السلوت</p>
+<select id="gameType">
+<option value="classic">سلوت كلاسيك 🎰</option>
+<option value="fruit">سلوت الفواكه 🍒</option>
+<option value="gold">سلوت الذهب 💰</option>
+</select>
+
+<p>قيمة اللعب</p>
+<select id="bet">
+<option value="1">1 د.ت افتراضية</option>
+<option value="5">5 د.ت افتراضية</option>
+<option value="10">10 د.ت افتراضية</option>
+</select>
+
+<div id="reels">🍒 | ⭐ | 🍋</div>
+<button onclick="spin()">العب الآن</button>
+<p id="message"></p>
 <button onclick="logout()">خروج</button>
 </div>
+
+<p class="small">الرصيد افتراضي للترفيه فقط، لا إيداع ولا سحب ولا قيمة نقدية.</p>
 </main>
-<p>النقاط افتراضية فقط ولا توجد أموال حقيقية أو مدفوعات.</p>
+
 <script>
-let users=JSON.parse(localStorage.users||"{}"),current="";
-function enter(create){
-let n=document.getElementById("name").value.trim();
-let p=document.getElementById("pass").value;
-if(!n||!p){msg.textContent="اكتب اسم المستخدم وكلمة المرور";return}
-if(create){
-if(users[n]){msg.textContent="الاسم موجود";return}
-users[n]={password:p,points:100};
-}else if(!users[n]||users[n].password!==p){
-msg.textContent="معلومات الدخول غير صحيحة";return
+let user="";
+let balance=1000;
+const symbols={
+classic:["🍒","⭐","💎","7️⃣","🔔"],
+fruit:["🍒","🍋","🍉","🍇","🍊"],
+gold:["💰","👑","🪙","💎","⭐"]
+};
+
+function login(){
+let name=document.getElementById("username").value.trim();
+if(!name){alert("اكتب اسمك أولا");return;}
+user=name;
+let saved=localStorage.getItem("bg_"+user);
+balance=saved===null?1000:Number(saved);
+document.getElementById("player").textContent=user;
+document.getElementById("login").style.display="none";
+document.getElementById("game").style.display="block";
+update();
 }
-localStorage.users=JSON.stringify(users);
-current=n;login.classList.add("hidden");game.classList.remove("hidden");
-who.textContent=n;points.textContent=users[n].points;
+
+function update(){
+document.getElementById("balance").textContent=balance;
+localStorage.setItem("bg_"+user,balance);
 }
-function play(){
-let v=Math.floor(Math.random()*31);
-users[current].points+=v;
-localStorage.users=JSON.stringify(users);
-points.textContent=users[current].points;
-result.textContent="ربحت "+v+" نقطة افتراضية!";
+
+function spin(){
+let bet=Number(document.getElementById("bet").value);
+if(balance<bet){
+document.getElementById("message").textContent="رصيدك غير كافٍ!";
+return;
 }
+balance-=bet;
+let type=document.getElementById("gameType").value;
+let s=symbols[type];
+let a=s[Math.floor(Math.random()*s.length)];
+let b=s[Math.floor(Math.random()*s.length)];
+let c=s[Math.floor(Math.random()*s.length)];
+document.getElementById("reels").textContent=a+" | "+b+" | "+c;
+
+let msg="حظ أوفر في المرة القادمة!";
+if(a===b && b===c){
+balance+=bet*10;
+msg="🎉 مبروك! ربحت "+(bet*10)+" د.ت افتراضية!";
+}else if(a===b || b===c || a===c){
+balance+=bet*2;
+msg="👏 ربحت "+(bet*2)+" د.ت افتراضية!";
+}
+document.getElementById("message").textContent=msg;
+update();
+}
+
 function logout(){
-current="";game.classList.add("hidden");login.classList.remove("hidden");
+user="";
+document.getElementById("game").style.display="none";
+document.getElementById("login").style.display="block";
+}
+</script>
+</body>
+</html>
+
 }
 </script>
 </body>
